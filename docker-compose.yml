@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: coursework-server-db
+    environment:
+      POSTGRES_DB: coursework-server-db
+      POSTGRES_USER: kolpriks
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5444:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kolpriks -d coursework-server-db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  coursework-server:
+    build: ./coursework-server
+    container_name: coursework-server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/coursework-server-db
+      SPRING_DATASOURCE_USERNAME: kolpriks
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL-AUTO: update
+
+volumes:
+  postgres_data:
