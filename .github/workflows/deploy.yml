@@ -29,6 +29,6 @@ jobs:
           username: ${{ secrets.PROD_USER }}
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-            cd /CourseWork-Server
+            cd /coursework-Server
             git pull origin main
             ./gradlew clean bootJar
