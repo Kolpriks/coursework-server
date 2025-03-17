@@ -22,7 +22,7 @@ jobs:
           key: ${{ secrets.PROD_SSH_KEY }}
           port: 22
           script: |
-            cd /coursework-server
+            cd coursework-server/
             # Обновляем репозиторий (если он уже склонирован)
             git pull origin main
             # Останавливаем и удаляем все контейнеры
