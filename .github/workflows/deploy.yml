@@ -17,14 +17,22 @@ jobs:
       - name: Deploy to VM via SSH
         uses: appleboy/ssh-action@v0.1.7
         with:
-          host: ${{ secrets.SERVER_IP }}       
+          host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.PROD_USER }}
           key: ${{ secrets.PROD_SSH_KEY }}
           port: 22
           script: |
-            cd /home/${{ secrets.PROD_USER }}/coursework-server
+            cd /coursework-server
             # Обновляем репозиторий (если он уже склонирован)
             git pull origin main
-            # Строим и запускаем контейнеры
-            docker-compose down
+            # Останавливаем и удаляем все контейнеры
+            docker stop $(docker ps -aq) || true
+            docker rm $(docker ps -aq) || true
+            # Удаляем все образы
+            docker rmi $(docker images -q) || true
+            # Полная очистка Docker (тома, неиспользуемых сетей и dangling объектов)
+            docker system prune -a -f || true
+            # Также останавливаем docker-compose и удаляем связанные ресурсы
+            docker-compose down --volumes --remove-orphans || true
+            # Строим и запускаем контейнеры с пересборкой образов
             docker-compose up -d --build
