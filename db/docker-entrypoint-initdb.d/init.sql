@@ -23,3 +23,14 @@ CREATE TABLE favorite (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (cars_id) REFERENCES cars(id) ON DELETE CASCADE
 );
+
+CREATE TABLE assignment (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    car_id  INT NOT NULL,
+    CONSTRAINT fk_assignment_user
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_assignment_car
+        FOREIGN KEY (car_id)  REFERENCES cars(id)  ON DELETE CASCADE,
+    CONSTRAINT uq_assignment_user_car UNIQUE (user_id, car_id)
+);
