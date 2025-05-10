@@ -11,6 +11,7 @@ import org.springframework.security.web.SecurityFilterChain
 @Configuration
 class SecurityConfig {
 
+    // По-прежнему нужен бином для шифрования паролей, если где-то ещё используется
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
@@ -18,11 +19,13 @@ class SecurityConfig {
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .csrf().disable()
-            .authorizeHttpRequests {
-                it.requestMatchers("/auth/**").permitAll()
-                  .anyRequest().authenticated()
+            // Разрешаем абсолютно все запросы без аутентификации
+            .authorizeHttpRequests { auth ->
+                auth.anyRequest().permitAll()
             }
+            // Отключаем HTTP Basic (если не нужен вовсе), иначе можно оставить
             .httpBasic(Customizer.withDefaults())
+
         return http.build()
     }
 }
