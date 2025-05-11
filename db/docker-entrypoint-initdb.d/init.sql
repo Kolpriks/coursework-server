@@ -34,3 +34,12 @@ CREATE TABLE assignment (
         FOREIGN KEY (car_id)  REFERENCES cars(id) ON DELETE CASCADE,
     CONSTRAINT uq_assignment_user_car UNIQUE (user_id, car_id)
 );
+
+ALTER TABLE assignment
+ADD COLUMN manager_id INT NOT NULL;
+
+ALTER TABLE assignment
+ADD CONSTRAINT fk_assignment_manager
+    FOREIGN KEY (manager_id)
+    REFERENCES users(id)
+    ON DELETE RESTRICT;

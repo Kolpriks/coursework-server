@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface AssignmentRepository : JpaRepository<Assignment, Long> {
     fun existsByUserAndCar(user: User, car: Car): Boolean
+    fun countByManager(manager: User): Long
+    fun findAllByManager(manager: User): List<Assignment>
 }
