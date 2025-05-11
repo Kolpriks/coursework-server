@@ -10,7 +10,7 @@ interface CarRepository : JpaRepository<Car, Long> {
     @Query("""
         select c 
         from Car c 
-        where c.id not in (select a.car.id from assignment a)
+        where c.id not in (select a.car.id from Assignment a)
     """)
     fun findAllUnassigned(): List<Car>
 }
