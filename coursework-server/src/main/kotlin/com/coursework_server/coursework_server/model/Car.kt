@@ -15,7 +15,6 @@ data class Car(
     val price: BigDecimal,
 
     @Lob
-    @JsonIgnore
     val image: ByteArray? = null,
 
     val description: String? = null,
