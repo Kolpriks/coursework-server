@@ -4,6 +4,7 @@ import com.coursework_server.coursework_server.model.Car
 import com.coursework_server.coursework_server.repository.CarRepository
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.http.HttpStatus
 
 @RestController
 @RequestMapping("/cars")
