@@ -8,9 +8,11 @@ import org.springframework.stereotype.Repository
 @Repository
 interface CarRepository : JpaRepository<Car, Long> {
     @Query("""
-        select c 
-        from Car c 
-        where c.id not in (select a.car.id from Assignment a)
+        SELECT c
+        FROM Car c
+        WHERE NOT EXISTS (
+            SELECT 1 FROM Assignment a WHERE a.car = c
+        )
     """)
     fun findAllUnassigned(): List<Car>
 }
