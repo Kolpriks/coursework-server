@@ -16,6 +16,9 @@ class AssignmentController(
     private val carRepository: CarRepository
 ) {
 
+    /**
+     * Эндпоинт назначения машины покупателю менеджером
+     */
     @PostMapping
     fun assignCarToUser(
         @RequestParam carId: Long,
@@ -23,34 +26,20 @@ class AssignmentController(
         @RequestParam managerEmail: String
     ): ResponseEntity<String> {
         // Получение покупателя
-        val buyerOpt = userRepository.findByEmail(buyerEmail)
-        if (buyerOpt.isEmpty) {
-            return ResponseEntity.badRequest()
-                .body("Покупатель с email='$buyerEmail' не найден")
-        }
-        val buyer = buyerOpt.get()
+        val buyer = userRepository.findByEmail(buyerEmail)
+            .orElseThrow { IllegalArgumentException("Покупатель с email='$buyerEmail' не найден") }
 
-        // Получение менеджера
-        val managerOpt = userRepository.findByEmail(managerEmail)
-        if (managerOpt.isEmpty) {
-            return ResponseEntity.badRequest()
-                .body("Менеджер с email='$managerEmail' не найден")
-        }
-        val manager = managerOpt.get()
-
-        // Проверка роли менеджера
+        // Получение менеджера и проверка роли
+        val manager = userRepository.findByEmail(managerEmail)
+            .orElseThrow { IllegalArgumentException("Менеджер с email='$managerEmail' не найден") }
         if (manager.role != "manager") {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body("Пользователь $managerEmail не является менеджером")
         }
 
         // Получение машины
-        val carOpt = carRepository.findById(carId)
-        if (carOpt.isEmpty) {
-            return ResponseEntity.badRequest()
-                .body("Машина с id=$carId не найдена")
-        }
-        val car = carOpt.get()
+        val car = carRepository.findById(carId)
+            .orElseThrow { IllegalArgumentException("Машина с id=$carId не найдена") }
 
         // Проверка существующей связи
         if (assignmentRepository.existsByUserAndCar(buyer, car)) {
@@ -58,32 +47,39 @@ class AssignmentController(
                 .body("Покупатель уже назначен на эту машину")
         }
 
-        // Создание записи
+        // Создание и сохранение записи
         val assignment = Assignment(user = buyer, car = car, manager = manager)
         assignmentRepository.save(assignment)
         return ResponseEntity.ok("Машина успешно назначена покупателю менеджером $managerEmail")
     }
 
+    /**
+     * Эндпоинт: количество назначений по менеджеру
+     */
     @GetMapping("/count")
     fun getCountByManager(
         @RequestParam managerEmail: String
-    ): ResponseEntity<Map<String, Long>> {
-        val managerOpt = userRepository.findByEmail(managerEmail)
-        if (managerOpt.isEmpty) {
-            return ResponseEntity.badRequest().build()
-        }
-        val manager = managerOpt.get()
+    ): ResponseEntity<Map<String, Any>> {
+        val manager = userRepository.findByEmail(managerEmail)
+            .orElseThrow { IllegalArgumentException("Менеджер с email='$managerEmail' не найден") }
         val count = assignmentRepository.countByManager(manager)
-        return ResponseEntity.ok(mapOf("manager" to managerEmail, "assignmentsCount" to count))
+        return ResponseEntity.ok(
+            mapOf(
+                "managerEmail" to managerEmail,
+                "assignmentsCount" to count
+            )
+        )
     }
 
+    /**
+     * Эндпоинт: список назначений по менеджеру
+     */
     @GetMapping
     fun getAssignmentsByManager(
         @RequestParam managerEmail: String
     ): ResponseEntity<List<Assignment>> {
-        val managerOpt = userRepository.findByEmail(managerEmail)
-        if (managerOpt.isEmpty) return ResponseEntity.badRequest().build()
-        val manager = managerOpt.get()
+        val manager = userRepository.findByEmail(managerEmail)
+            .orElseThrow { IllegalArgumentException("Менеджер с email='$managerEmail' не найден") }
         val list = assignmentRepository.findAllByManager(manager)
         return ResponseEntity.ok(list)
     }
