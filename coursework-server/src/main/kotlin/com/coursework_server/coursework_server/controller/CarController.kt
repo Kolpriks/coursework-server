@@ -2,16 +2,16 @@ package com.coursework_server.coursework_server.controller
 
 import com.coursework_server.coursework_server.model.Car
 import com.coursework_server.coursework_server.repository.CarRepository
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.springframework.http.HttpStatus
 
 @RestController
 @RequestMapping("/cars")
 class CarController(private val carRepository: CarRepository) {
 
     @GetMapping
-    fun getAllCars(): List<Car> = carRepository.findAllUnassigned()
+    fun getAllCars(): List<Car> = carRepository.findAll()
 
     @GetMapping("/{id}")
     fun getCarById(@PathVariable id: Long): ResponseEntity<Car> {
