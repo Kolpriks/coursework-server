@@ -7,12 +7,14 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface CarRepository : JpaRepository<Car, Long> {
+    /**
+     * Возвращает все автомобили, которые не назначены ни одному пользователю
+     */
     @Query("""
         SELECT c
         FROM Car c
-        WHERE NOT EXISTS (
-            SELECT 1 FROM Assignment a WHERE a.car = c
-        )
+        LEFT JOIN Assignment a ON a.car = c
+        WHERE a.id IS NULL
     """)
     fun findAllUnassigned(): List<Car>
 }
