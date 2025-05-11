@@ -22,69 +22,69 @@ class AssignmentController(
         @RequestParam buyerEmail: String,
         @RequestParam managerEmail: String
     ): ResponseEntity<String> {
-    // получение покупателя
-    val buyerOpt = userRepository.findByEmail(buyerEmail)
-    if (buyerOpt.isEmpty) {
-        return ResponseEntity.badRequest()
-            .body("Покупатель с email='$buyerEmail' не найден")
-    }
-    val buyer = buyerOpt.get()
+        // Получение покупателя
+        val buyerOpt = userRepository.findByEmail(buyerEmail)
+        if (buyerOpt.isEmpty) {
+            return ResponseEntity.badRequest()
+                .body("Покупатель с email='$buyerEmail' не найден")
+        }
+        val buyer = buyerOpt.get()
 
-    // получение менеджера
-    val managerOpt = userRepository.findByEmail(managerEmail)
-    if (managerOpt.isEmpty) {
-        return ResponseEntity.badRequest()
-            .body("Менеджер с email='$managerEmail' не найден")
-    }
-    val manager = managerOpt.get()
+        // Получение менеджера
+        val managerOpt = userRepository.findByEmail(managerEmail)
+        if (managerOpt.isEmpty) {
+            return ResponseEntity.badRequest()
+                .body("Менеджер с email='$managerEmail' не найден")
+        }
+        val manager = managerOpt.get()
 
-    // проверка, что manager.role == "manager"
-    if (manager.role != "manager") {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-            .body("Пользователь $managerEmail не является менеджером")
+        // Проверка роли менеджера
+        if (manager.role != "manager") {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body("Пользователь $managerEmail не является менеджером")
+        }
+
+        // Получение машины
+        val carOpt = carRepository.findById(carId)
+        if (carOpt.isEmpty) {
+            return ResponseEntity.badRequest()
+                .body("Машина с id=$carId не найдена")
+        }
+        val car = carOpt.get()
+
+        // Проверка существующей связи
+        if (assignmentRepository.existsByUserAndCar(buyer, car)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body("Покупатель уже назначен на эту машину")
+        }
+
+        // Создание записи
+        val assignment = Assignment(user = buyer, car = car, manager = manager)
+        assignmentRepository.save(assignment)
+        return ResponseEntity.ok("Машина успешно назначена покупателю менеджером $managerEmail")
     }
 
-    // получение машины
-    val carOpt = carRepository.findById(carId)
-    if (carOpt.isEmpty) {
-        return ResponseEntity.badRequest()
-            .body("Машина с id=$carId не найдена")
-    }
-    val car = carOpt.get()
-
-    // проверка существующей связи
-    if (assignmentRepository.existsByUserAndCar(buyer, car)) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-            .body("Покупатель уже назначен на эту машину")
-    }
-
-    // создание записи
-    val assignment = Assignment(user = buyer, car = car, manager = manager)
-    assignmentRepository.save(assignment)
-    return ResponseEntity.ok("Машина успешно назначена покупателю менеджером $managerEmail")
-    }
     @GetMapping("/count")
-fun getCountByManager(
-    @RequestParam managerEmail: String
-): ResponseEntity<Map<String, Long>> {
-    val managerOpt = userRepository.findByEmail(managerEmail)
-    if (managerOpt.isEmpty) {
-        return ResponseEntity.badRequest()
-            .build()
+    fun getCountByManager(
+        @RequestParam managerEmail: String
+    ): ResponseEntity<Map<String, Long>> {
+        val managerOpt = userRepository.findByEmail(managerEmail)
+        if (managerOpt.isEmpty) {
+            return ResponseEntity.badRequest().build()
+        }
+        val manager = managerOpt.get()
+        val count = assignmentRepository.countByManager(manager)
+        return ResponseEntity.ok(mapOf("manager" to managerEmail, "assignmentsCount" to count))
     }
-    val manager = managerOpt.get()
-    val count = assignmentRepository.countByManager(manager)
-    return ResponseEntity.ok(mapOf("manager" to managerEmail, "assignmentsCount" to count))
-}
 
-@GetMapping
-fun getAssignmentsByManager(
-    @RequestParam managerEmail: String
-): ResponseEntity<List<Assignment>> {
-    val managerOpt = userRepository.findByEmail(managerEmail)
-    if (managerOpt.isEmpty) return ResponseEntity.badRequest().build()
-    val manager = managerOpt.get()
-    val list = assignmentRepository.findAllByManager(manager)
-    return ResponseEntity.ok(list)
-}
+    @GetMapping
+    fun getAssignmentsByManager(
+        @RequestParam managerEmail: String
+    ): ResponseEntity<List<Assignment>> {
+        val managerOpt = userRepository.findByEmail(managerEmail)
+        if (managerOpt.isEmpty) return ResponseEntity.badRequest().build()
+        val manager = managerOpt.get()
+        val list = assignmentRepository.findAllByManager(manager)
+        return ResponseEntity.ok(list)
+    }
 }

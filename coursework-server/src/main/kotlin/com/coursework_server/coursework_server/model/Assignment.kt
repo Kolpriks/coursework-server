@@ -5,7 +5,9 @@ import jakarta.persistence.*
 @Entity
 @Table(
     name = "assignment",
-    uniqueConstraints = [UniqueConstraint(columnNames = ["user_id", "car_id", "manager_id"])]
+    uniqueConstraints = [
+        UniqueConstraint(columnNames = ["user_id", "car_id", "manager_id"])
+    ]
 )
 data class Assignment(
     @Id
