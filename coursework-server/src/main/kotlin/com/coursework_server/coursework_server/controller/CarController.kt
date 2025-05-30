@@ -40,7 +40,7 @@ class CarController(private val carRepository: CarRepository) {
     @DeleteMapping("/{id}")
      fun deleteCar(@PathVariable id: Long): ResponseEntity<Void> {
         return if (carRepository.existsById(id)) {
-            favoriteRepository.deleteByCarsId(id)
+            favoriteRepository.deleteByCarsId(id)фыв
             carRepository.deleteById(id)
             ResponseEntity.noContent().build()
         } else {
